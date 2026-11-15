@@ -1,0 +1,917 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0E9F6E"/>
+<meta name="description" content="Rural Pulse — field data capture, review and payout for AI village asset mapping."/>
+<title>Rural Pulse · Field &amp; Ops</title>
+<link rel="stylesheet" href="styles.css"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E9F6E'/><path d='M6 19c4-9 12-9 20 0' stroke='%23fff' stroke-width='2.6' fill='none' stroke-linecap='round'/><circle cx='16' cy='12' r='2.8' fill='%23fff'/></svg>"/>
+</head>
+<body>
+<a class="skip-link" href="#view">Skip to main content</a>
+
+<div class="stage">
+
+  <!-- =====================================================
+       PHONE PREVIEW (desktop) / FULL SCREEN (mobile)
+       ===================================================== -->
+  <div class="phone">
+    <div class="phone__frame">
+
+      <!-- fake device status bar (desktop preview only) -->
+      <div class="phone__status desktop-only">
+        <span>9:41</span>
+        <span class="island"><span></span></span>
+        <span class="right">
+          <span data-icon="signal" data-raw="1"></span>
+          <span data-icon="wifi" data-raw="1"></span>
+          <span data-icon="battery" data-raw="1"></span>
+        </span>
+      </div>
+
+      <div class="app">
+
+        <!-- ===================================================
+             TOP BAR
+             =================================================== -->
+        <header class="topbar">
+          <div class="topbar__row">
+            <button class="brand" id="brandHome" type="button" aria-label="Go to home">
+              <span class="brand__mark" data-icon="pulse"></span>
+              <span class="brand__text">
+                <span class="brand__title">Rural Pulse</span>
+              </span>
+            </button>
+            <span class="topbar__spacer"></span>
+
+            <button class="pill pill--compact" id="langPill" type="button" aria-label="Change language">
+              <span id="langPillText">EN</span>
+            </button>
+
+            <button class="pill pill--square" id="netChip" type="button" aria-live="polite" aria-label="Connection status. Tap to sync">
+              <span data-icon="wifi"></span><span id="netChipText">Online</span>
+            </button>
+
+            <button class="iconbtn iconbtn--dot" type="button" aria-label="Notifications" id="bellBtn">
+              <span data-icon="bell"></span>
+            </button>
+
+            <button class="iconbtn iconbtn--avatar" id="avatarBtn" type="button" aria-label="Your profile and settings">RP</button>
+          </div>
+        </header>
+
+        <!-- scrolling village ticker -->
+        <div class="ticker" aria-hidden="true">
+          <div class="ticker__track" id="tickerTrack"></div>
+        </div>
+
+        <!-- ===================================================
+             SCROLLABLE VIEW
+             =================================================== -->
+        <main class="view" id="view" tabindex="-1">
+
+          <!-- ---------- HOME ---------- -->
+          <section class="screen" id="scr-home" aria-labelledby="homeTitle">
+            <div class="stack stack--sm">
+              <span class="eyebrow eyebrow--brand" id="homeRole">Field contributor</span>
+              <h1 class="h1" id="homeTitle">Namaste, Ramesh</h1>
+              <div class="row" style="gap:6px">
+                <span data-icon="pin" style="width:16px;height:16px;color:var(--brand)"></span>
+                <span class="meta" id="homePlace">Uruli Kanchan, Pune · Ward 04</span>
+              </div>
+            </div>
+
+            <!-- dark hero: the money, first -->
+            <div class="card card--hero stack stack--sm">
+              <div class="row row--between">
+                <span class="meta" style="color:var(--hero-text-2);font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:var(--fs-2xs)">Total earned</span>
+                <span class="badge badge--brand"><span data-icon="trending"></span><span id="homeTodayChip">+₹0 today</span></span>
+              </div>
+              <div class="row row--between" style="align-items:flex-end">
+                <span class="stat__value num" id="homeCredited" style="font-size:var(--fs-3xl);color:#fff">₹0</span>
+                <div class="stack stack--sm" style="align-items:flex-end;gap:1px">
+                  <span class="meta" style="color:var(--hero-text-2)">In review</span>
+                  <span style="font-size:var(--fs-lg);font-weight:800;color:#7DD3FC" id="homeInReview">₹0</span>
+                </div>
+              </div>
+              <div class="row row--between">
+                <span class="meta" style="color:var(--hero-text-2)" id="homePaidNote">0 photos paid</span>
+                <span class="meta" style="color:var(--hero-text-2)" id="homeWaitingNote">0 waiting to send</span>
+              </div>
+            </div>
+
+            <!-- quick actions -->
+            <div class="chiprow" id="homeQuick"></div>
+
+            <!-- mapping health gauge -->
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <span class="h3">Mapping health</span>
+                <span class="badge badge--brand" id="homeHealthBadge">Good</span>
+              </div>
+              <div class="gauge">
+                <div class="gauge__ring">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <circle class="track" cx="50" cy="50" r="42" fill="none" stroke-width="10"/>
+                    <circle class="value" id="gaugeArc" cx="50" cy="50" r="42" fill="none" stroke-width="10" stroke-dasharray="264" stroke-dashoffset="264"/>
+                  </svg>
+                  <span class="gauge__num"><b id="gaugeValue">0</b><span>/100</span></span>
+                </div>
+                <div class="metrics" id="gaugeMetrics"></div>
+              </div>
+              <button class="btn btn--ghost btn--block" data-goto="scr-history" type="button">View all submissions <span data-icon="arrow-right"></span></button>
+            </div>
+
+            <!-- alert card -->
+            <div id="homeAlert"></div>
+
+            <!-- recent -->
+            <div class="stack stack--sm">
+              <div class="row row--between">
+                <h2 class="h3">Recent submissions</h2>
+                <button class="btn btn--quiet btn--sm" data-goto="scr-history" type="button">See all</button>
+              </div>
+              <div class="stacklist" id="homeRecent"></div>
+            </div>
+          </section>
+
+          <!-- ---------- ONBOARDING: LANGUAGE ---------- -->
+          <section class="screen" id="scr-onboard-language" aria-labelledby="langTitle">
+            <div class="steps" aria-hidden="true">
+              <span class="steps__seg is-current"></span><span class="steps__seg"></span><span class="steps__seg"></span><span class="steps__seg"></span>
+            </div>
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 1 of 4 · Setup</span>
+              <span class="badge badge--brand">Offline ready</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="langTitle">Choose your language</h1>
+              <p class="lead">You will type and speak descriptions in this language. App buttons stay in English for now.</p>
+            </div>
+
+            <button class="notice notice--brand" id="speakBtn" type="button" style="text-align:left;cursor:pointer;border-width:1px">
+              <span data-icon="volume-up"></span>
+              <span>
+                <span class="notice__title">Bolkar suniye — play instructions</span>
+                Reads this page aloud in your selected language.
+              </span>
+            </button>
+
+            <fieldset class="stack stack--sm" style="border:0;padding:0;margin:0">
+              <legend class="sr-only">Select language</legend>
+              <div id="langOptions" class="stack stack--sm"></div>
+            </fieldset>
+
+            <button class="btn btn--block" id="langNext" type="button">
+              Continue with <span id="langNextLabel">English</span> <span data-icon="arrow-right"></span>
+            </button>
+          </section>
+
+          <!-- ---------- ONBOARDING: VERIFY ---------- -->
+          <section class="screen" id="scr-onboard-verify" aria-labelledby="verifyTitle">
+            <div class="steps" aria-hidden="true">
+              <span class="steps__seg is-done"></span><span class="steps__seg is-current"></span><span class="steps__seg"></span><span class="steps__seg"></span>
+            </div>
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 2 of 4 · Verification</span>
+              <span class="meta">Field agent programme</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="verifyTitle">Verify your mobile number</h1>
+              <p class="lead">We send a 6-digit code by SMS. Your number is only used to pay your photo rewards.</p>
+            </div>
+
+            <div class="card stack">
+              <div class="field">
+                <label class="label" for="phoneInput">Mobile number <span class="label__req">Required</span></label>
+                <div class="row" style="gap:8px">
+                  <span class="chip" style="min-height:46px">+91</span>
+                  <input class="input grow" id="phoneInput" type="tel" inputmode="numeric" maxlength="10"
+                     autocomplete="tel-national" placeholder="10-digit mobile number" aria-describedby="phoneHint"/>
+                </div>
+                <p class="hint" id="phoneHint"><span data-icon="info"></span><span>Example: 9876543210</span></p>
+              </div>
+
+              <button class="btn btn--block" id="sendOtpBtn" type="button">Send OTP</button>
+
+              <div class="stack stack--sm" id="otpBlock" hidden>
+                <div class="field">
+                  <label class="label" for="otp1">One-time passcode <span class="label__req">Required</span></label>
+                  <div class="row" style="gap:8px" id="otpInputs"></div>
+                  <p class="hint"><span data-icon="info"></span><span id="otpHint">Enter the 6 digits sent by SMS.</span></p>
+                </div>
+                <div class="row row--between">
+                  <span class="meta">Did not get the code?</span>
+                  <button class="btn btn--quiet btn--sm" id="resendBtn" type="button" disabled>Resend in 30s</button>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn--block" id="verifyNext" type="button" disabled>
+              Verify &amp; continue <span data-icon="arrow-right"></span>
+            </button>
+          </section>
+
+          <!-- ---------- ONBOARDING: PROFILE ---------- -->
+          <section class="screen" id="scr-onboard-profile" aria-labelledby="profTitle">
+            <div class="steps" aria-hidden="true">
+              <span class="steps__seg is-done"></span><span class="steps__seg is-done"></span><span class="steps__seg is-current"></span><span class="steps__seg"></span>
+            </div>
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 3 of 4 · Profile</span>
+              <span class="meta">Payouts need this</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="profTitle">Your details</h1>
+              <p class="lead">Your name must match the name on your bank account so the ₹10 reward is not rejected.</p>
+            </div>
+
+            <div class="card stack">
+              <div class="field">
+                <label class="label" for="nameInput">Full name <span class="label__req">Required</span></label>
+                <input class="input" id="nameInput" type="text" autocomplete="name" placeholder="As printed on your bank passbook"/>
+                <p class="hint hint--error" id="nameErr" hidden><span data-icon="alert"></span><span>Enter your full name.</span></p>
+              </div>
+
+              <fieldset class="stack stack--sm" style="border:0;padding:0;margin:0">
+                <legend class="label" style="margin-bottom:6px">You are contributing as</legend>
+                <label class="opt">
+                  <input type="radio" name="ctype" value="ngo" checked/>
+                  <span class="opt__dot" aria-hidden="true"></span>
+                  <span class="opt__body">
+                    <span class="opt__title">NGO field agent</span>
+                    <span class="opt__desc">Affiliated with an organisation running village drives.</span>
+                  </span>
+                </label>
+                <label class="opt">
+                  <input type="radio" name="ctype" value="volunteer"/>
+                  <span class="opt__dot" aria-hidden="true"></span>
+                  <span class="opt__body">
+                    <span class="opt__title">Independent volunteer</span>
+                    <span class="opt__desc">Community member, student or local coordinator.</span>
+                  </span>
+                </label>
+              </fieldset>
+
+              <div class="field" id="orgField">
+                <label class="label" for="orgInput">Organisation / partner name</label>
+                <input class="input" id="orgInput" type="text" placeholder="e.g. Pratham Rural Education"/>
+              </div>
+            </div>
+
+            <button class="btn btn--block" id="profNext" type="button">Save &amp; continue <span data-icon="arrow-right"></span></button>
+          </section>
+
+          <!-- ---------- ONBOARDING: BASE STATION ---------- -->
+          <section class="screen" id="scr-onboard-place" aria-labelledby="placeTitle">
+            <div class="steps" aria-hidden="true">
+              <span class="steps__seg is-done"></span><span class="steps__seg is-done"></span><span class="steps__seg is-done"></span><span class="steps__seg is-current"></span>
+            </div>
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 4 of 4 · Base station</span>
+              <span class="meta" id="gpsStatePill">GPS not checked</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="placeTitle">Set your home village</h1>
+              <p class="lead">Most of your photos should be from this village. You can still submit from another place while travelling.</p>
+            </div>
+
+            <div class="card stack">
+              <div class="field">
+                <label class="label" for="baseStateSel">State <span class="label__req">Required</span></label>
+                <select class="select" id="baseStateSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="baseDistrictSel">District <span class="label__req">Required</span></label>
+                <select class="select" id="baseDistrictSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="baseTalukaSel">Taluka / block <span class="label__req">Required</span></label>
+                <select class="select" id="baseTalukaSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="baseVillageSel">Gram panchayat / village <span class="label__req">Required</span></label>
+                <select class="select" id="baseVillageSel"></select>
+              </div>
+              <div class="btn-group btn-group--2">
+                <div class="field">
+                  <label class="label" for="wardInput">Ward number <span class="label__req">Required</span></label>
+                  <input class="input" id="wardInput" type="number" min="1" max="40" inputmode="numeric" value="4"/>
+                </div>
+                <div class="field">
+                  <label class="label" for="pinInput">PIN code <span class="label__req">Required</span></label>
+                  <input class="input" id="pinInput" type="text" inputmode="numeric" maxlength="6" placeholder="6 digits"/>
+                </div>
+              </div>
+              <button class="btn btn--ghost btn--block" id="gpsCheckBtn" type="button">
+                <span data-icon="pin"></span><span>Check my current location</span>
+              </button>
+              <div class="notice notice--info" id="gpsResult" hidden></div>
+            </div>
+
+            <button class="btn btn--block" id="placeNext" type="button">Continue to photo guide <span data-icon="arrow-right"></span></button>
+          </section>
+
+          <!-- ---------- ONBOARDING: GUIDE + CONSENT ---------- -->
+          <section class="screen" id="scr-onboard-consent" aria-labelledby="guideTitle">
+            <div class="steps" aria-hidden="true">
+              <span class="steps__seg is-done"></span><span class="steps__seg is-done"></span><span class="steps__seg is-done"></span><span class="steps__seg is-done"></span>
+            </div>
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Ready</span>
+              <span class="badge badge--brand">₹10 per approved photo</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="guideTitle">Photo rules &amp; consent</h1>
+              <p class="lead">Four rules get your photo approved the first time. Read the privacy part — it protects you and your neighbours.</p>
+            </div>
+
+            <div class="card stack" id="guideRules"></div>
+
+            <div class="card stack">
+              <span class="eyebrow eyebrow--warn"><span data-icon="shield"></span>Before you photograph anything</span>
+              <ul class="stack stack--sm" style="font-size:var(--fs-2xs);color:var(--text-2)">
+                <li class="row" style="align-items:flex-start;gap:8px"><span data-icon="check" style="color:var(--brand);width:17px;height:17px;flex:none;margin-top:3px"></span>
+                  <span>These photos and their GPS coordinates may be published in an open AI dataset. Anyone with the dataset can see <strong>exactly where</strong> the photo was taken.</span></li>
+                <li class="row" style="align-items:flex-start;gap:8px"><span data-icon="check" style="color:var(--brand);width:17px;height:17px;flex:none;margin-top:3px"></span>
+                  <span>Never photograph children, or a person's face, without that person's permission. Use the privacy flags on the capture screen and the reviewer will blur or refuse the photo.</span></li>
+                <li class="row" style="align-items:flex-start;gap:8px"><span data-icon="check" style="color:var(--brand);width:17px;height:17px;flex:none;margin-top:3px"></span>
+                  <span>Public buildings (schools, clinics, panchayat offices, wells) are fine. Private homes are not — ask the owner first, or flag it as a private property.</span></li>
+                <li class="row" style="align-items:flex-start;gap:8px"><span data-icon="check" style="color:var(--brand);width:17px;height:17px;flex:none;margin-top:3px"></span>
+                  <span>You stay responsible for consent. A photo published without permission can be taken down and the reward reversed.</span></li>
+              </ul>
+              <label class="check">
+                <input type="checkbox" id="consentCheck"/>
+                <span class="check__box"><span data-icon="check"></span></span>
+                <span class="opt__body">
+                  <span class="opt__title">I understand and will follow these rules</span>
+                  <span class="opt__desc">Required before you can start submitting photos.</span>
+                </span>
+              </label>
+            </div>
+
+            <button class="btn btn--block" id="guideNext" type="button" disabled>Start mapping <span data-icon="arrow-right"></span></button>
+          </section>
+
+          <!-- ---------- CAPTURE ---------- -->
+          <section class="screen" id="scr-capture" aria-labelledby="capTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 1 of 4 · Capture</span>
+              <span class="badge badge--brand"><span data-icon="satellite"></span><span>GPS</span></span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="capTitle">Take or upload one photo</h1>
+              <p class="lead">One clear photo of one asset. Nothing else.</p>
+            </div>
+
+            <div class="photo">
+              <img class="photo__img" id="capImg" alt="Photo preview of the village asset" src=""/>
+              <div class="photo__bar">
+                <span class="photo__tag" id="capPhotoTag"><span data-icon="image"></span><span>No photo yet</span></span>
+                <span class="row" style="gap:6px">
+                  <button class="iconbtn" id="zoomOut" type="button" aria-label="Zoom out"><span data-icon="zoom-out"></span></button>
+                  <button class="iconbtn" id="zoomIn" type="button" aria-label="Zoom in"><span data-icon="zoom-in"></span></button>
+                </span>
+              </div>
+            </div>
+
+            <div class="btn-group btn-group--2">
+              <button class="btn btn--ghost" id="takePhotoBtn" type="button"><span data-icon="camera"></span><span>Take photo</span></button>
+              <button class="btn btn--ghost" id="galleryBtn" type="button"><span data-icon="image"></span><span>From gallery</span></button>
+            </div>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden/>
+            <input type="file" id="galleryInput" accept="image/*" hidden/>
+
+            <div class="card stack stack--sm" id="capMetaCard" hidden>
+              <div class="row row--between">
+                <span class="eyebrow">Measured on this device</span>
+                <span class="badge badge--muted" id="capSizeBadge">—</span>
+              </div>
+              <div class="stacklist" id="capMetaList"></div>
+              <div class="divider"></div>
+              <div class="row row--between">
+                <span class="eyebrow">Quality check</span>
+                <span class="badge" id="capAuditBadge">—</span>
+              </div>
+              <div class="checklist" id="capAuditList"></div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <span class="eyebrow eyebrow--warn"><span data-icon="shield"></span>Privacy flags for this photo</span>
+              <label class="check">
+                <input type="checkbox" id="flagPeople"/>
+                <span class="check__box"><span data-icon="check"></span></span>
+                <span class="opt__body">
+                  <span class="opt__title">People are visible in the photo</span>
+                  <span class="opt__desc">Reviewer will check for permission before approving.</span>
+                </span>
+              </label>
+              <label class="check">
+                <input type="checkbox" id="flagPrivate"/>
+                <span class="check__box"><span data-icon="check"></span></span>
+                <span class="opt__body">
+                  <span class="opt__title">This is a private property</span>
+                  <span class="opt__desc">A home or shop that is not a public building.</span>
+                </span>
+              </label>
+              <label class="check">
+                <input type="checkbox" id="flagSign"/>
+                <span class="check__box"><span data-icon="check"></span></span>
+                <span class="opt__body">
+                  <span class="opt__title">A nameplate or signboard is readable</span>
+                  <span class="opt__desc">Names and phone numbers are personal data.</span>
+                </span>
+              </label>
+            </div>
+
+            <button class="btn btn--block" id="capNext" type="button" disabled>Next: location <span data-icon="arrow-right"></span></button>
+          </section>
+
+          <!-- ---------- LOCATION ---------- -->
+          <section class="screen" id="scr-location" aria-labelledby="locTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 2 of 4 · Location</span>
+              <span class="meta">GPS makes the dataset useful</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="locTitle">Where was this photo taken?</h1>
+              <p class="lead">The coordinates are stored with the photo forever, so pick the honest answer.</p>
+            </div>
+
+            <div class="card stack" id="locTelemetry">
+              <div class="row row--between">
+                <span class="row" style="gap:8px"><span data-icon="satellite"></span><span class="h3">Location source</span></span>
+                <span class="badge badge--muted" id="locSourceBadge">Not set</span>
+              </div>
+              <div class="stacklist" id="locTelemetryList"></div>
+              <button class="btn btn--ghost btn--block" id="locUseGps" type="button"><span data-icon="pin"></span><span>Use my current GPS position</span></button>
+            </div>
+
+            <fieldset class="stack stack--sm" style="border:0;padding:0;margin:0">
+              <legend class="label" style="margin-bottom:6px">Label for this photo</legend>
+              <label class="opt">
+                <input type="radio" name="locmode" value="home" checked/>
+                <span class="opt__dot" aria-hidden="true"></span>
+                <span class="opt__body">
+                  <span class="opt__title">My base station village</span>
+                  <span class="opt__desc" id="locHomeDesc">—</span>
+                </span>
+              </label>
+              <label class="opt">
+                <input type="radio" name="locmode" value="other"/>
+                <span class="opt__dot" aria-hidden="true"></span>
+                <span class="opt__body">
+                  <span class="opt__title">A different village</span>
+                  <span class="opt__desc">Only for this photo. The reviewer sees it as unverified unless the GPS matches.</span>
+                </span>
+              </label>
+            </fieldset>
+
+            <div class="card stack stack--sm" id="locOtherBox" hidden>
+              <div class="field">
+                <label class="label" for="locStateSel">State</label>
+                <select class="select" id="locStateSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="locDistrictSel">District</label>
+                <select class="select" id="locDistrictSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="locTalukaSel">Taluka / block</label>
+                <select class="select" id="locTalukaSel"></select>
+              </div>
+              <div class="field">
+                <label class="label" for="locVillageSel">Village</label>
+                <select class="select" id="locVillageSel"></select>
+              </div>
+              <div class="notice notice--warn">
+                <span data-icon="alert"></span>
+                <span><span class="notice__title">Cannot be verified</span>Only the device GPS can prove where a photo was taken. A typed village name is unverified and is paid only if the reviewer accepts it.</span>
+              </div>
+            </div>
+
+            <div class="btn-group btn-group--2">
+              <button class="btn btn--ghost" data-back="scr-capture" type="button"><span data-icon="arrow-left"></span><span>Back</span></button>
+              <button class="btn" id="locNext" type="button">Next: category <span data-icon="arrow-right"></span></button>
+            </div>
+          </section>
+
+          <!-- ---------- CATEGORIES ---------- -->
+          <section class="screen" id="scr-categories" aria-labelledby="catTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 3 of 4 · Tagging</span>
+              <span class="meta" id="catCount">0 selected</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="catTitle">What is in the photo?</h1>
+              <p class="lead">Tap one or more. The first one you pick is the main category used for the dataset label.</p>
+            </div>
+            <div class="tiles" id="catTiles"></div>
+            <div class="btn-group btn-group--2">
+              <button class="btn btn--ghost" data-back="scr-location" type="button"><span data-icon="arrow-left"></span><span>Back</span></button>
+              <button class="btn" id="catNext" type="button" disabled>Next: describe <span data-icon="arrow-right"></span></button>
+            </div>
+          </section>
+
+          <!-- ---------- DESCRIBE ---------- -->
+          <section class="screen" id="scr-describe" aria-labelledby="descTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Step 4 of 4 · Description</span>
+              <span class="meta" id="descLangNote">English</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="descTitle">Describe the asset</h1>
+              <p class="lead">Short answers are fine. Speak instead of typing if that is easier.</p>
+            </div>
+
+            <div class="card stack">
+              <div class="field">
+                <label class="label" for="assetName">What is it called? <span class="label__req">Required</span></label>
+                <input class="input" id="assetName" type="text" placeholder="e.g. Gram Panchayat Bhavan"/>
+              </div>
+              <div class="field">
+                <span class="label">When was it built? <span class="meta">Optional</span></span>
+                <div class="chiprow" id="yearChips"></div>
+              </div>
+              <div class="field">
+                <span class="label">Is it working? <span class="meta">Optional</span></span>
+                <div class="chiprow" id="conditionChips"></div>
+              </div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <label class="label" for="descInput">Description <span class="label__req">Required</span></label>
+                <span class="meta num" id="descCount">0 characters</span>
+              </div>
+              <div class="row row--wrap" style="gap:8px">
+                <span class="meta">Speak in:</span>
+                <div class="chiprow grow" id="descLangChips"></div>
+              </div>
+              <textarea class="textarea" id="descInput" rows="4"
+                placeholder="e.g. Uruli Kanchan village panchayat office. Built in 2011. Weekly gram sabha meetings are held here."></textarea>
+              <div class="btn-group btn-group--2">
+                <button class="btn btn--ghost" id="descMicBtn" type="button"><span data-icon="mic"></span><span id="descMicLabel">Speak</span></button>
+                <button class="btn btn--ghost" id="descClearBtn" type="button"><span data-icon="trash"></span><span>Clear</span></button>
+              </div>
+              <div class="notice" id="descHint">
+                <span data-icon="lightbulb"></span>
+                <span><span class="notice__title">What reviewers look for</span>Asset name, rough year, and what the building is used for. At least 20 characters.</span>
+              </div>
+            </div>
+
+            <div class="btn-group btn-group--2">
+              <button class="btn btn--ghost" data-back="scr-categories" type="button"><span data-icon="arrow-left"></span><span>Back</span></button>
+              <button class="btn" id="descNext" type="button">Next: review <span data-icon="arrow-right"></span></button>
+            </div>
+          </section>
+
+          <!-- ---------- REVIEW + SUBMIT ---------- -->
+          <section class="screen" id="scr-review" aria-labelledby="revTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Final check</span>
+              <span class="badge" id="revNetBadge">—</span>
+            </div>
+            <div class="stack stack--sm">
+              <h1 class="h1" id="revTitle">Review your submission</h1>
+              <p class="lead">Check the details below, then send it for verification.</p>
+            </div>
+
+            <div class="card stack" style="padding:0;overflow:hidden">
+              <img class="photo__img" id="revImg" alt="Submission photo" style="border-radius:0" src=""/>
+              <div class="stack" style="padding:16px;gap:12px">
+                <div class="kv"><span class="kv__k">Location</span><span class="kv__v" id="revLocation">—</span></div>
+                <div class="kv"><span class="kv__k">Coordinates</span><span class="kv__v" id="revGps">—</span></div>
+                <div class="kv"><span class="kv__k">Category</span><span class="kv__v" id="revCategory">—</span></div>
+                <div class="kv"><span class="kv__k">Description</span><span class="kv__v" id="revDescription" style="text-align:left">—</span></div>
+                <div class="kv"><span class="kv__k">Privacy flags</span><span class="kv__v" id="revFlags">—</span></div>
+              </div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <span class="row" style="gap:8px"><span data-icon="payments"></span><span class="h3">Reward</span></span>
+                <span style="font-size:var(--fs-lg);font-weight:800;color:var(--brand)">₹10.00</span>
+              </div>
+              <p class="meta">Paid to your UPI after a reviewer approves the photo. Approvals take up to 2 working days. A rejected photo shows the reason and can be resubmitted.</p>
+            </div>
+
+            <div class="notice notice--info">
+              <span data-icon="cloud"></span>
+              <span><span class="notice__title">Offline queue is always on</span>If the signal drops, this submission is saved on this phone and sent automatically when you are back online. You will see it in History as "Waiting to send".</span>
+            </div>
+
+            <div class="btn-group btn-group--2">
+              <button class="btn btn--ghost" data-back="scr-describe" type="button"><span data-icon="arrow-left"></span><span>Back</span></button>
+              <button class="btn" id="submitBtn" type="button"><span data-icon="send"></span><span id="submitLabel">Send for review</span></button>
+            </div>
+          </section>
+
+          <!-- ---------- DONE ---------- -->
+          <section class="screen" id="scr-done" aria-labelledby="doneTitle">
+            <div class="stack" style="align-items:center;text-align:center;padding:14px 0">
+              <div style="width:70px;height:70px;border-radius:99px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand)">
+                <span data-icon="check-circle" style="width:38px;height:38px"></span>
+              </div>
+              <h1 class="h1" id="doneTitle">Sent for review</h1>
+              <p class="lead" id="doneMsg">A reviewer will check your photo. You will get the ₹10 in your UPI account once it is approved.</p>
+            </div>
+
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <span class="kv__k">Submission ID</span>
+                <button class="chip mono" id="copyIdBtn" type="button"><span data-icon="copy"></span><span id="doneId">—</span></button>
+              </div>
+              <div class="kv"><span class="kv__k">Status</span><span class="kv__v" id="doneStatus">—</span></div>
+              <div class="kv"><span class="kv__k">Asset</span><span class="kv__v" id="doneAsset">—</span></div>
+              <div class="kv"><span class="kv__k">Village</span><span class="kv__v" id="donePlace">—</span></div>
+            </div>
+
+            <div class="btn-group btn-group--2">
+              <button class="btn" id="doneAgainBtn" type="button"><span data-icon="camera"></span><span>Submit another</span></button>
+              <button class="btn btn--ghost" data-goto="scr-history" type="button"><span data-icon="history"></span><span>History</span></button>
+            </div>
+          </section>
+
+          <!-- ---------- HISTORY ---------- -->
+          <section class="screen" id="scr-history" aria-labelledby="histTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Your submissions</span>
+              <span class="meta" id="histTotal">0 records</span>
+            </div>
+            <h1 class="h1" id="histTitle">Submission history</h1>
+            <div class="chiprow" id="histFilters"></div>
+            <div class="stacklist" id="histList"></div>
+          </section>
+
+          <!-- ---------- EARNINGS ---------- -->
+          <section class="screen" id="scr-earnings" aria-labelledby="earnTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Wallet</span>
+              <span class="badge badge--brand">Paid to UPI</span>
+            </div>
+            <h1 class="h1" id="earnTitle">Your earnings</h1>
+
+            <div class="card card--hero stack stack--sm">
+              <span class="meta" style="color:var(--hero-text-2);font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:var(--fs-2xs)">Credited to your UPI</span>
+              <div class="row row--between" style="align-items:flex-end">
+                <span class="stat__value num" id="earnCredited" style="font-size:var(--fs-3xl);color:#fff">₹0</span>
+                <div class="stack stack--sm" style="align-items:flex-end;gap:1px">
+                  <span class="meta" style="color:var(--hero-text-2)">In review</span>
+                  <span style="font-size:var(--fs-lg);font-weight:800;color:#7DD3FC" id="earnPending">₹0</span>
+                </div>
+              </div>
+              <div class="row row--between">
+                <span class="meta" style="color:var(--hero-text-2)" id="earnApprovedNote">0 photos paid</span>
+                <span class="meta" style="color:var(--hero-text-2)" id="earnWaitingNote">0 waiting to send</span>
+              </div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <span class="row" style="gap:8px"><span data-icon="account"></span><span class="h3">Payout destination</span></span>
+                <span class="badge" id="upiBadge">—</span>
+              </div>
+              <div class="kv"><span class="kv__k">UPI ID</span><span class="kv__v mono" id="upiValue">—</span></div>
+              <div class="kv"><span class="kv__k">Name on account</span><span class="kv__v" id="upiName">—</span></div>
+              <button class="btn btn--ghost btn--block" id="upiChangeBtn" type="button"><span data-icon="key"></span><span>Change UPI ID</span></button>
+            </div>
+
+            <div class="stack stack--sm">
+              <h2 class="h3">Ledger</h2>
+              <div class="seg" id="ledgerTabs"></div>
+              <div class="stacklist" id="ledgerList"></div>
+            </div>
+          </section>
+
+          <!-- ---------- SETTINGS ---------- -->
+          <section class="screen" id="scr-settings" aria-labelledby="setTitle">
+            <h1 class="h1" id="setTitle">Settings</h1>
+
+            <div class="card stack stack--sm">
+              <div class="row" style="gap:12px">
+                <div style="width:50px;height:50px;border-radius:99px;display:grid;place-items:center;background:linear-gradient(140deg,var(--brand),var(--accent));color:#fff;font-weight:800" id="setInitials">RP</div>
+                <div class="stack stack--sm" style="min-width:0">
+                  <span class="h3" id="setName">—</span>
+                  <span class="meta" id="setPhone">—</span>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="kv"><span class="kv__k">Organisation</span><span class="kv__v" id="setOrg">—</span></div>
+              <div class="kv"><span class="kv__k">Base station</span><span class="kv__v" id="setPlace">—</span></div>
+              <div class="kv"><span class="kv__k">Agent ID</span><span class="kv__v mono" id="setAgentId">—</span></div>
+            </div>
+
+            <div class="card stack">
+              <div class="switch">
+                <div class="stack stack--sm">
+                  <span class="h3">Dark theme</span>
+                  <span class="meta">Easier on the eyes at night, more contrast outdoors</span>
+                </div>
+                <label class="switch__track" aria-label="Dark theme"><input type="checkbox" id="themeSwitch"/><span></span></label>
+              </div>
+              <div class="divider"></div>
+              <div class="switch">
+                <div class="stack stack--sm">
+                  <span class="h3">Work offline</span>
+                  <span class="meta">Prototype switch to test the offline queue</span>
+                </div>
+                <label class="switch__track" aria-label="Simulate offline"><input type="checkbox" id="offlineSwitch"/><span></span></label>
+              </div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <div class="row row--between">
+                <span class="stack stack--sm">
+                  <span class="h3">Sync</span>
+                  <span class="meta" id="setLastSync">—</span>
+                </span>
+                <button class="btn btn--ghost btn--sm" id="setSyncBtn" type="button"><span data-icon="sync"></span><span>Sync now</span></button>
+              </div>
+              <div class="kv"><span class="kv__k">Waiting to send</span><span class="kv__v num" id="setQueue">0</span></div>
+              <div class="kv"><span class="kv__k">Records on this phone</span><span class="kv__v num" id="setRecords">0</span></div>
+            </div>
+
+            <div class="card stack stack--sm">
+              <span class="h3">Account</span>
+              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-language" type="button"><span data-icon="translate"></span><span>Change language</span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-place" type="button"><span data-icon="pin"></span><span>Change base station village</span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-consent" type="button"><span data-icon="shield"></span><span>Photo rules &amp; consent</span></button>
+            </div>
+
+            <div class="card stack stack--sm">
+              <span class="h3">Operations</span>
+              <button class="btn btn--ghost btn--block" id="openReviewerBtn" type="button"><span data-icon="briefcase"></span><span>Review Desk (staff)</span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-help" type="button"><span data-icon="help"></span><span>Help &amp; FAQ</span></button>
+              <button class="btn btn--danger btn--block" id="resetBtn" type="button"><span data-icon="refresh"></span><span>Reset demo data</span></button>
+            </div>
+
+            <p class="meta">Rural Pulse prototype · everything runs on this device · no data leaves the phone.</p>
+          </section>
+
+          <!-- ---------- HELP ---------- -->
+          <section class="screen" id="scr-help" aria-labelledby="helpTitle">
+            <h1 class="h1" id="helpTitle">Help &amp; FAQ</h1>
+            <div class="field">
+              <label class="sr-only" for="faqSearch">Search help topics</label>
+              <input class="input" id="faqSearch" type="search" placeholder="Search: payment, blurry, GPS…"/>
+            </div>
+            <div class="stack stack--sm" id="faqList"></div>
+            <div class="card stack stack--sm">
+              <span class="eyebrow eyebrow--brand">Village coordinator</span>
+              <div class="row" style="gap:12px">
+                <div style="width:46px;height:46px;border-radius:99px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-strong);font-weight:800">VP</div>
+                <div class="stack stack--sm">
+                  <span class="h3">Village Panchayat Coordinator</span>
+                  <span class="meta" id="coordPhone">+91 00000 00000</span>
+                </div>
+              </div>
+              <div class="btn-group btn-group--2">
+                <a class="btn btn--ghost" id="coordCall" href="tel:+910000000000"><span data-icon="phone"></span><span>Call</span></a>
+                <a class="btn btn--ghost" id="coordWa" href="https://wa.me/910000000000" rel="noopener"><span data-icon="chat"></span><span>WhatsApp</span></a>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------- REVIEWER ---------- -->
+          <section class="screen" id="scr-reviewer" aria-labelledby="rvTitle">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand">Staff only</span>
+              <button class="btn btn--quiet btn--sm" id="rvExitBtn" type="button"><span data-icon="arrow-left"></span><span>Exit desk</span></button>
+            </div>
+            <h1 class="h1" id="rvTitle">Review desk</h1>
+            <div class="stats" id="rvStats"></div>
+
+            <div class="card stack stack--sm">
+              <div class="field">
+                <label class="sr-only" for="rvSearch">Search the queue</label>
+                <input class="input" id="rvSearch" type="search" placeholder="Search village, ID, category…"/>
+              </div>
+              <div class="seg" id="rvTabs"></div>
+            </div>
+
+            <div class="stacklist" id="rvList"></div>
+
+            <div class="stack stack--sm">
+              <h2 class="h3">Decision log</h2>
+              <div class="stacklist" id="rvLog"></div>
+            </div>
+          </section>
+
+        </main>
+
+        <!-- ===================================================
+             BOTTOM NAV + FLOATING ACTION BUTTON
+             =================================================== -->
+        <nav class="bottomnav" aria-label="Main">
+          <div class="bottomnav__row">
+            <button class="navbtn" data-goto="scr-home" type="button" aria-current="page">
+              <span data-icon="home"></span><span>Home</span>
+            </button>
+            <button class="navbtn" data-goto="scr-history" type="button">
+              <span data-icon="history"></span><span>History</span>
+            </button>
+            <button class="navbtn" data-goto="scr-earnings" type="button">
+              <span data-icon="wallet"></span><span>Earnings</span>
+            </button>
+            <button class="navbtn" data-goto="scr-settings" type="button">
+              <span data-icon="settings"></span><span>Settings</span>
+            </button>
+          </div>
+        </nav>
+
+        <button class="fab" id="fabBtn" type="button" aria-label="Take a new photo submission">
+          <span data-icon="camera"></span>
+        </button>
+
+      </div><!-- /.app -->
+
+      <div class="phone__home desktop-only"><i></i></div>
+    </div><!-- /.phone__frame -->
+  </div><!-- /.phone -->
+
+  <!-- =====================================================
+       DESKTOP FLOATING CONTROLS
+       ===================================================== -->
+  <aside class="stage__rail" aria-label="Prototype controls">
+    <button class="railbtn railbtn--brand" id="railTheme" type="button" aria-label="Toggle dark theme"><span data-icon="moon"></span></button>
+    <button class="railbtn" id="railOffline" type="button" aria-label="Simulate offline" aria-pressed="false"><span data-icon="wifi-off"></span></button>
+    <button class="railbtn railbtn--accent" id="railReviewer" type="button" aria-label="Open the review desk"><span data-icon="briefcase"></span></button>
+    <button class="railbtn" id="railReset" type="button" aria-label="Reset demo data"><span data-icon="refresh"></span></button>
+  </aside>
+
+</div><!-- /.stage -->
+
+<!-- =====================================================
+     SHEETS
+     ===================================================== -->
+<div class="modal" id="mdl-item" role="dialog" aria-modal="true" aria-labelledby="mdlItemTitle">
+  <div class="modal__panel">
+    <div class="modal__grab"></div>
+    <div class="modal__head">
+      <span class="h2" id="mdlItemTitle">Submission</span>
+      <button class="iconbtn" data-close="mdl-item" type="button" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+    <div class="modal__body" id="mdlItemBody"></div>
+    <div class="modal__foot" id="mdlItemFoot"></div>
+  </div>
+</div>
+
+<div class="modal" id="mdl-inspect" role="dialog" aria-modal="true" aria-labelledby="mdlInspectTitle">
+  <div class="modal__panel">
+    <div class="modal__grab"></div>
+    <div class="modal__head">
+      <span class="h2" id="mdlInspectTitle">Inspect</span>
+      <button class="iconbtn" data-close="mdl-inspect" type="button" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+    <div class="modal__body" id="mdlInspectBody"></div>
+    <div class="modal__foot" id="mdlInspectFoot"></div>
+  </div>
+</div>
+
+<div class="modal" id="mdl-upi" role="dialog" aria-modal="true" aria-labelledby="mdlUpiTitle">
+  <div class="modal__panel">
+    <div class="modal__grab"></div>
+    <div class="modal__head">
+      <span class="h2" id="mdlUpiTitle">Change UPI ID</span>
+      <button class="iconbtn" data-close="mdl-upi" type="button" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+    <div class="modal__body" id="mdlUpiBody"></div>
+    <div class="modal__foot" id="mdlUpiFoot"></div>
+  </div>
+</div>
+
+<div class="modal" id="mdl-pin" role="dialog" aria-modal="true" aria-labelledby="mdlPinTitle">
+  <div class="modal__panel">
+    <div class="modal__grab"></div>
+    <div class="modal__head">
+      <span class="h2" id="mdlPinTitle">Confirm it is you</span>
+      <button class="iconbtn" data-close="mdl-pin" type="button" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+    <div class="modal__body" id="mdlPinBody"></div>
+    <div class="modal__foot" id="mdlPinFoot"></div>
+  </div>
+</div>
+
+<div class="modal" id="mdl-note" role="dialog" aria-modal="true" aria-labelledby="mdlNoteTitle">
+  <div class="modal__panel">
+    <div class="modal__grab"></div>
+    <div class="modal__head">
+      <span class="h2" id="mdlNoteTitle">Add a note</span>
+      <button class="iconbtn" data-close="mdl-note" type="button" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+    <div class="modal__body" id="mdlNoteBody"></div>
+    <div class="modal__foot" id="mdlNoteFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span data-icon="check-circle"></span><span id="toastMsg"></span>
+</div>
+
+<script src="photos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
