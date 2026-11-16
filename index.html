@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="theme-color" content="#0E9F6E"/>
 <meta name="description" content="Rural Pulse — field data capture, review and payout for AI village asset mapping."/>
-<title>Rural Pulse · Field &amp; Ops</title>
+<title>Josh Talk AI · Rural Pulse</title>
 <link rel="stylesheet" href="styles.css"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E9F6E'/><path d='M6 19c4-9 12-9 20 0' stroke='%23fff' stroke-width='2.6' fill='none' stroke-linecap='round'/><circle cx='16' cy='12' r='2.8' fill='%23fff'/></svg>"/>
 </head>
@@ -20,17 +20,6 @@
   <div class="phone">
     <div class="phone__frame">
 
-      <!-- fake device status bar (desktop preview only) -->
-      <div class="phone__status desktop-only">
-        <span>9:41</span>
-        <span class="island"><span></span></span>
-        <span class="right">
-          <span data-icon="signal" data-raw="1"></span>
-          <span data-icon="wifi" data-raw="1"></span>
-          <span data-icon="battery" data-raw="1"></span>
-        </span>
-      </div>
-
       <div class="app">
 
         <!-- ===================================================
@@ -38,10 +27,23 @@
              =================================================== -->
         <header class="topbar">
           <div class="topbar__row">
-            <button class="brand" id="brandHome" type="button" aria-label="Go to home">
-              <span class="brand__mark" data-icon="pulse"></span>
+            <button class="brand" id="brandHome" type="button" aria-label="Josh Talk AI — go to home">
+              <span class="brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 120 120">
+                  <circle cx="46" cy="64" r="40" fill="#1E9AD8"/>
+                  <text x="46" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="500" fill="#ffffff" letter-spacing="0.4">JOSH</text>
+                  <circle cx="87" cy="30" r="24" fill="#F58220"/>
+                  <g transform="translate(87,30)">
+                    <rect x="-5" y="-13" width="10" height="17" rx="5" fill="#ffffff"/>
+                    <path d="M-9 -1a9 9 0 0 0 18 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="-1.5" y="7" width="3" height="8" rx="1.5" fill="#ffffff"/>
+                    <line x1="-3.4" y1="-6.5" x2="3.4" y2="-6.5" stroke="#F58220" stroke-width="1.3"/>
+                    <line x1="-3.4" y1="-3" x2="3.4" y2="-3" stroke="#F58220" stroke-width="1.3"/>
+                  </g>
+                </svg>
+              </span>
               <span class="brand__text">
-                <span class="brand__title">Rural Pulse</span>
+                <span class="brand__title">Josh Talk AI</span>
               </span>
             </button>
             <span class="topbar__spacer"></span>
@@ -54,18 +56,13 @@
               <span data-icon="wifi"></span><span id="netChipText">Online</span>
             </button>
 
-            <button class="iconbtn iconbtn--dot" type="button" aria-label="Notifications" id="bellBtn">
+            <button class="iconbtn iconbtn--dot" type="button" aria-label="Notifications and feature tour" id="bellBtn">
               <span data-icon="bell"></span>
             </button>
 
             <button class="iconbtn iconbtn--avatar" id="avatarBtn" type="button" aria-label="Your profile and settings">RP</button>
           </div>
         </header>
-
-        <!-- scrolling village ticker -->
-        <div class="ticker" aria-hidden="true">
-          <div class="ticker__track" id="tickerTrack"></div>
-        </div>
 
         <!-- ===================================================
              SCROLLABLE VIEW
@@ -101,6 +98,9 @@
                 <span class="meta" style="color:var(--hero-text-2)" id="homeWaitingNote">0 waiting to send</span>
               </div>
             </div>
+
+            <!-- offline / queue status (replaces the old scrolling ticker) -->
+            <div id="homeStatusBanner"></div>
 
             <!-- quick actions -->
             <div class="chiprow" id="homeQuick"></div>
@@ -164,9 +164,12 @@
               <div id="langOptions" class="stack stack--sm"></div>
             </fieldset>
 
-            <button class="btn btn--block" id="langNext" type="button">
-              Continue with <span id="langNextLabel">English</span> <span data-icon="arrow-right"></span>
-            </button>
+            <div class="btn-group btn-group--2" id="langActionRow">
+              <button class="btn btn--ghost" id="langCancel" type="button" hidden>Cancel</button>
+              <button class="btn" id="langNext" type="button">
+                Continue with <span id="langNextLabel">English</span> <span data-icon="arrow-right"></span>
+              </button>
+            </div>
           </section>
 
           <!-- ---------- ONBOARDING: VERIFY ---------- -->
@@ -676,7 +679,7 @@
               </div>
               <div class="kv"><span class="kv__k">UPI ID</span><span class="kv__v mono" id="upiValue">—</span></div>
               <div class="kv"><span class="kv__k">Name on account</span><span class="kv__v" id="upiName">—</span></div>
-              <button class="btn btn--ghost btn--block" id="upiChangeBtn" type="button"><span data-icon="key"></span><span>Change UPI ID</span></button>
+              <button class="btn btn--ghost btn--block" id="upiChangeBtn" type="button"><span data-icon="bank-add"></span><span>Change UPI ID</span></button>
             </div>
 
             <div class="stack stack--sm">
@@ -736,19 +739,20 @@
 
             <div class="card stack stack--sm">
               <span class="h3">Account</span>
-              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-language" type="button"><span data-icon="translate"></span><span>Change language</span></button>
-              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-place" type="button"><span data-icon="pin"></span><span>Change base station village</span></button>
-              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-consent" type="button"><span data-icon="shield"></span><span>Photo rules &amp; consent</span></button>
+              <button class="btn btn--ghost btn--block" id="changeLangBtn" type="button"><span class="menurow"><span class="menurow__icon" data-icon="translate"></span><span>Change language</span></span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-place" type="button"><span class="menurow"><span class="menurow__icon" data-icon="pin"></span><span>Change base station village</span></span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-onboard-consent" type="button"><span class="menurow"><span class="menurow__icon" data-icon="shield"></span><span>Photo rules &amp; consent</span></span></button>
             </div>
 
             <div class="card stack stack--sm">
               <span class="h3">Operations</span>
-              <button class="btn btn--ghost btn--block" id="openReviewerBtn" type="button"><span data-icon="briefcase"></span><span>Review Desk (staff)</span></button>
-              <button class="btn btn--ghost btn--block" data-goto="scr-help" type="button"><span data-icon="help"></span><span>Help &amp; FAQ</span></button>
-              <button class="btn btn--danger btn--block" id="resetBtn" type="button"><span data-icon="refresh"></span><span>Reset demo data</span></button>
+              <button class="btn btn--ghost btn--block" id="tourBtn" type="button"><span class="menurow"><span class="menurow__icon" data-icon="auto_awesome"></span><span>See the feature tour</span></span></button>
+              <button class="btn btn--ghost btn--block" id="openReviewerBtn" type="button"><span class="menurow"><span class="menurow__icon" data-icon="briefcase"></span><span>Review Desk (staff)</span></span></button>
+              <button class="btn btn--ghost btn--block" data-goto="scr-help" type="button"><span class="menurow"><span class="menurow__icon" data-icon="help"></span><span>Help &amp; FAQ</span></span></button>
+              <button class="btn btn--danger btn--block" id="resetBtn" type="button"><span class="menurow"><span class="menurow__icon" data-icon="refresh"></span><span>Reset demo data</span></span></button>
             </div>
 
-            <p class="meta">Rural Pulse prototype · everything runs on this device · no data leaves the phone.</p>
+            <p class="meta">Josh Talk AI · Rural Pulse prototype · everything runs on this device · no data leaves the phone.</p>
           </section>
 
           <!-- ---------- HELP ---------- -->
@@ -803,7 +807,7 @@
         </main>
 
         <!-- ===================================================
-             BOTTOM NAV + FLOATING ACTION BUTTON
+             BOTTOM NAV (camera raised in the centre)
              =================================================== -->
         <nav class="bottomnav" aria-label="Main">
           <div class="bottomnav__row">
@@ -812,6 +816,10 @@
             </button>
             <button class="navbtn" data-goto="scr-history" type="button">
               <span data-icon="history"></span><span>History</span>
+            </button>
+            <button class="navbtn navbtn--capture" id="navCapture" type="button" aria-label="Take a new photo submission">
+              <span class="navbtn__camera"><span data-icon="camera"></span></span>
+              <span class="navbtn__caplabel">Capture</span>
             </button>
             <button class="navbtn" data-goto="scr-earnings" type="button">
               <span data-icon="wallet"></span><span>Earnings</span>
@@ -822,13 +830,29 @@
           </div>
         </nav>
 
-        <button class="fab" id="fabBtn" type="button" aria-label="Take a new photo submission">
-          <span data-icon="camera"></span>
-        </button>
+        <!-- ===================================================
+             GUIDED TOUR — demo of the important features
+             =================================================== -->
+        <div class="tour" id="tour" role="dialog" aria-modal="true" aria-labelledby="tourTitle" hidden>
+          <div class="tour__spot" id="tourSpot"></div>
+          <div class="tour__card">
+            <div class="row row--between">
+              <span class="eyebrow eyebrow--brand" id="tourStep">Step 1 of 5</span>
+              <button class="iconbtn" id="tourClose" type="button" aria-label="Close the tour"><span data-icon="close"></span></button>
+            </div>
+            <h2 class="h2" id="tourTitle">—</h2>
+            <p class="lead" id="tourText">—</p>
+            <div class="row row--between">
+              <button class="btn btn--quiet btn--sm" id="tourSkip" type="button">Skip</button>
+              <div class="row" style="gap:12px">
+                <div class="tour__dots" id="tourDots"></div>
+                <button class="btn btn--sm" id="tourNext" type="button">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div><!-- /.app -->
-
-      <div class="phone__home desktop-only"><i></i></div>
     </div><!-- /.phone__frame -->
   </div><!-- /.phone -->
 

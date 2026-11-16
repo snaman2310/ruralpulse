@@ -57,13 +57,6 @@
     return file;
   }
 
-  window.addEventListener('error', e => {
-    const pre = document.createElement('pre');
-    pre.id = 'results';
-    pre.textContent = results.join('\n') + '\n\nERROR: ' + (e.error && e.error.stack ? e.error.stack : e.message);
-    document.body.appendChild(pre);
-  });
-
   window.addEventListener('load', async function () {
    try {
     await sleep(500);
@@ -74,10 +67,33 @@
     ok('mapping health gauge is computed', Number(txt('#gaugeValue')) > 0, txt('#gaugeValue'));
     ok('gauge metrics rendered', $$('#gaugeMetrics .metrics__row').length === 4);
     ok('quick actions rendered', $$('#homeQuick .qact').length === 5);
-    ok('ticker has live items', $$('#tickerTrack .ticker__item').length > 4);
-    ok('attention card rendered', /waiting/i.test(txt('#homeAlert')), txt('#homeAlert').replace(/\s+/g, ' ').slice(0, 60));
+    ok('ticker strip removed', !document.querySelector('.ticker'));
     ok('photos are generated raster images', /^data:image\/jpeg/.test($$('#homeRecent img')[0].getAttribute('src') || ''),
       ($$('#homeRecent img')[0].getAttribute('src') || '').slice(0, 22));
+    ok('header shows the Josh Talk AI wordmark', /Josh Talk AI/.test(txt('#brandHome')));
+    ok('header uses the Josh Talks logo image', !!document.querySelector('#brandHome svg circle'));
+
+    /* 1b. guided tour demo */
+    await sleep(900);
+    ok('feature tour opens on first run', !$('#tour').hidden);
+    ok('tour step 1 is the capture button', /Step 1 of 5/.test(txt('#tourStep')), txt('#tourStep'));
+    click($('#tourNext')); await sleep(350);
+    ok('tour advances to step 2', /Step 2 of 5/.test(txt('#tourStep')), txt('#tourStep'));
+    ok('tour dots reflect progress', $$('#tourDots .tour__dot.is-on').length === 1);
+    click($('#tourSkip')); await sleep(250);
+    ok('tour can be skipped', $('#tour').hidden);
+
+    /* 1c. language change returns to home */
+    click($('#avatarBtn')); await sleep(200);
+    click($('#changeLangBtn')); await sleep(250);
+    ok('language screen opens for editing', active() === 'scr-onboard-language', active());
+    ok('cancel button shown in edit mode', !$('#langCancel').hidden);
+    const hi = $$('#langOptions input[name=lang]').find(r => r.value === 'hi-IN');
+    hi.checked = true; hi.dispatchEvent(new Event('change', { bubbles: true }));
+    await sleep(150);
+    click($('#langNext')); await sleep(300);
+    ok('language change returns to home', active() === 'scr-home', active());
+    ok('language pill updated to HI', txt('#langPillText') === 'HI', txt('#langPillText'));
 
     /* 2. offline queue */
     const off = $('#offlineSwitch');
@@ -87,7 +103,7 @@
     ok('offline chip turns on', /Offline/.test(txt('#netChip')), txt('#netChip'));
 
     /* 3. submit a photo while offline */
-    click($('#fabBtn'));
+    click($('#navCapture'));
     await sleep(200);
     ok('capture screen opens', active() === 'scr-capture', active());
     await attachPhoto('#galleryInput', 1);
@@ -131,7 +147,7 @@
     off.dispatchEvent(new Event('change', { bubbles: true }));
     await sleep(400);
     ok('chip back online', /Online|queued/.test(txt('#netChip')), txt('#netChip'));
-    click($('#fabBtn')); await sleep(150);
+    click($('#navCapture')); await sleep(150);
     click($('[data-goto="scr-history"]')); await sleep(200);
     ok('history shows waiting filter count', /Waiting to send \(/.test(txt('#histFilters')), txt('#histFilters').replace(/\s+/g, ' '));
     ok('history record count is derived', txt('#histTotal') === '25 records', txt('#histTotal'));
@@ -163,7 +179,7 @@
     ok('ledger uses a segmented control', $$('#ledgerTabs .seg__btn').length === 4);
 
     /* 8. duplicate detection */
-    click($('#fabBtn')); await sleep(200);
+    click($('#navCapture')); await sleep(200);
     await attachPhoto('#galleryInput', 1);
     ok('duplicate of the earlier photo detected', /duplicate|Duplicate/i.test(txt('#capAuditList')), txt('#capAuditBadge'));
 
@@ -204,9 +220,46 @@
 
     /* 12. phone preview shell */
     ok('desktop phone frame present', !!$('.phone__frame'));
-    ok('device status bar present', !!$('.phone__status'));
-    ok('floating action button present', !!$('.fab'));
-    ok('bottom nav has 4 tabs', $$('.bottomnav .navbtn').length === 4);
+    ok('preview has no fake device chrome', !$('.phone__status') && !$('.phone__home'),
+      'status=' + !!$('.phone__status') + ' home=' + !!$('.phone__home'));
+    ok('preview uses real phone width', (function () {
+      const w = $('.phone').getBoundingClientRect().width;
+      return w === 390;
+    })(), Math.round($('.phone').getBoundingClientRect().width) + 'px');
+    (function () {
+      const btns = $$('.bottomnav .navbtn');
+      const labels = btns.map(b => b.textContent.trim());
+      ok('footer order is home, history, camera, earnings, settings',
+        btns.length === 5 && labels.join(',') === 'Home,History,Capture,Earnings,Settings', labels.join('|'));
+      ok('camera sits in the centre of the footer', btns[2].classList.contains('navbtn--capture'));
+      const mid = btns[2].getBoundingClientRect();
+      const left = btns[0].getBoundingClientRect();
+      const right = btns[4].getBoundingClientRect();
+      ok('camera is horizontally centred',
+        Math.abs((mid.left + mid.width / 2) - (left.left + right.right) / 2) < 12,
+        'cam=' + Math.round(mid.left + mid.width / 2) + ' navMid=' + Math.round((left.left + right.right) / 2));
+      const others = btns.filter(b => !b.classList.contains('navbtn--capture'))
+        .map(b => b.querySelector('svg').getBoundingClientRect().top);
+      const camTop = document.querySelector('.navbtn__camera').getBoundingClientRect().top;
+      ok('camera is raised above the other four', camTop < Math.min.apply(null, others) - 8,
+        'camTop=' + Math.round(camTop) + ' otherTop=' + Math.round(Math.min.apply(null, others)));
+    })();
+    ok('no floating action button left over', !$('.fab'));
+
+    /* 13. the last section is never hidden behind the footer */
+    (async function () {
+      click($('[data-goto="scr-history"]')); await sleep(300);
+      const view = $('#view');
+      view.scrollTop = view.scrollHeight;
+      await sleep(350);
+      const screen = $('#scr-history');
+      const kids = Array.from(screen.querySelectorAll('.item, .card, .btn-group'));
+      const last = kids[kids.length - 1];
+      const navTop = $('.bottomnav').getBoundingClientRect().top;
+      const lastBottom = last ? last.getBoundingClientRect().bottom : 0;
+      ok('last card clears the footer when scrolled to the bottom', lastBottom <= navTop + 1,
+        'lastBottom=' + Math.round(lastBottom) + ' navTop=' + Math.round(navTop));
+    })();
 
     const pre = document.createElement('pre');
     pre.id = 'results';

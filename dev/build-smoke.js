@@ -21,6 +21,7 @@ if (process.argv.includes('--run')) {
   if (!edge) { console.log('No Chromium browser found — skipped.'); process.exit(0); }
   const dom = execFileSync(edge, [
     '--headless=new', '--disable-gpu', '--no-sandbox',
+    '--window-size=1280,900', '--force-device-scale-factor=1',
     '--virtual-time-budget=30000', '--dump-dom',
     'file:///' + out.replace(/\\/g, '/')
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });

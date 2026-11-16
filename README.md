@@ -1,4 +1,4 @@
-# Rural Pulse · Field & Ops
+# Josh Talk AI · Rural Pulse
 
 Field data capture, review and payout prototype for AI village-asset mapping.
 
@@ -11,10 +11,13 @@ runs entirely offline (no CDN, no webfont, no network calls).
 
 | Viewport | What you get |
 | --- | --- |
-| **Phone (≤ 899 px)** | Full-bleed native app — real top bar, scrolling ticker, bottom tab bar, floating capture button. Safe-area insets respected. |
-| **Desktop (≥ 900 px)** | A phone preview: 412 × 872 device frame with bezel, dynamic island, fake status bar and home indicator, centred on a neutral canvas. Floating prototype controls sit at the bottom-right. |
+| **Phone (≤ 899 px)** | Full-bleed native app — real top bar, scrolling content, bottom tab bar, raised capture button. Safe-area insets respected. |
+| **Desktop (≥ 900 px)** | The same app rendered at **390 × 844** (iPhone 13/14 logical size), centred on a neutral canvas. |
 
-The device frame is pure CSS — it is not an image, so it stays crisp at any zoom.
+**There is no fake device chrome.** The desktop preview has no mock status bar, no
+dynamic island and no home indicator, so the pixels inside the frame are exactly
+what a phone shows — the only difference is the rounded preview container around
+them. Prototype controls sit outside the frame at the bottom-right.
 
 ---
 
@@ -52,6 +55,30 @@ and pay, flag for a supervisor, or reject with a mandatory reason and a note the
 contributor can act on.
 
 **Deep links** — `index.html#scr-earnings` opens straight to a screen.
+
+---
+
+## Guided tour
+
+On first run the app walks the user through the five things that matter — take a
+photo, your money, the mapping-health score, fixing rejections, offline mode —
+with a spotlight on each one and a card explaining it. It is replayable any time
+from the bell icon in the header or *Settings → See the feature tour*.
+
+---
+
+## Layout notes
+
+- **Header** — Josh Talks logo mark + "Josh Talk AI", language pill, connection
+  chip (tap to sync), notifications, avatar.
+- **Footer** — `Home · History · Capture · Earnings · Settings`, with the camera
+  raised above the other four as the primary action.
+- **Every screen keeps 132 px of clearance below its last element**, so the
+  footer can never cut off a button at the bottom of the scroll.
+- The mapping-health gauge centres its score inside the ring; the settings list
+  rows use a fixed icon column so every icon and label lines up.
+- Icons are hand-drawn inline SVG, including the bank-with-plus badge on
+  *Change UPI ID*, so nothing depends on an icon font or an image request.
 
 ---
 
@@ -124,6 +151,10 @@ checks.
 
 ## Notes
 
+- The header uses an inline SVG recreation of the Josh Talks mark (blue circle +
+  orange mic badge) so it stays crisp at any size and needs no image request.
+  The original `josh_talks_logo.png` is in this folder if you want to swap the
+  real asset in.
 - Data lives in `localStorage` under `ruralpulse.v1`. *Settings → Reset demo
   data* restores the seeded 24 records.
 - Seeded photos are generated at first run, so the very first load takes a

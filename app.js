@@ -78,10 +78,29 @@
     'bell':      'M18 9.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5zM10.2 19.5a2 2 0 0 0 3.6 0',
     'trending':  'M3.5 16.5 9 11l4 4 7.5-7.5 M15.5 7.5h5v5',
     'signal':    'M4 18v-3 M9 18v-6 M14 18v-9 M19 18V5',
-    'battery':   'M3.5 8h14v8h-14z M20 11v2'
+    'battery':   'M3.5 8h14v8h-14z M20 11v2',
+    'auto_awesome': 'M12 3.5l1.8 4.7 4.7 1.8-4.7 1.8L12 16.5l-1.8-4.7L5.5 10l4.7-1.8z M18.5 15.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z'
+  };
+
+  /* Icons that need their own colours live here as raw SVG. */
+  const RAW_ICONS = {
+    'bank-add':
+      '<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M12 2.8 3.4 7.9h17.2z"/>' +
+      '<path d="M4 9.8h16"/>' +
+      '<path d="M6.4 11.7v6.1M10 11.7v6.1M14 11.7v6.1M17.6 11.7v6.1"/>' +
+      '<path d="M4.6 19.8h14.8"/>' +
+      '</g>' +
+      '<circle cx="12" cy="5.6" r="1.55" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+      '<path d="M12 4.6v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>' +
+      '<circle cx="18.5" cy="18.4" r="4.3" fill="#1570EF" stroke="none"/>' +
+      '<path d="M18.5 16.1v4.6M16.2 18.4h4.6" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" fill="none"/>'
   };
 
   function svgIcon(name) {
+    if (RAW_ICONS[name]) {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + RAW_ICONS[name] + '</svg>';
+    }
     const d = ICONS[name] || ICONS.info;
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
@@ -314,7 +333,7 @@
         lang: 'en-IN', upi: '', upiVerified: false, upiNeedsCheck: false,
         agentId: '', onboarded: false
       },
-      settings: { theme: 'light', simulateOffline: false },
+      settings: { theme: 'light', simulateOffline: false, tourSeen: false },
       target: 250,
       submissions: [],
       log: [],
@@ -473,7 +492,8 @@
     DB = load();
     if (!DB) { DB = seedStore(); save(); }
     if (!DB.log) DB.log = [];
-    if (!DB.settings) DB.settings = { theme: 'light', simulateOffline: false };
+    if (!DB.settings) DB.settings = { theme: 'light', simulateOffline: false, tourSeen: false };
+    if (typeof DB.settings.tourSeen === 'undefined') DB.settings.tourSeen = false;
   }
 
   /* ==================================================================
@@ -648,20 +668,23 @@
   }
 
   function renderTicker(s) {
-    const track = $('#tickerTrack');
-    if (!track) return;
-    const items = [
-      { icon: isOnline() ? 'wifi' : 'wifi-off', html: isOnline() ? '<b>Online</b>' : '<b>Offline</b> — photos saved on this phone', cls: isOnline() ? 'ticker__up' : 'ticker__warn' },
-      { icon: 'pin', html: '<b>' + esc(DB.user.village) + '</b> Ward ' + esc(DB.user.ward || '1') },
-      { icon: 'check-circle', html: '<b>' + s.approved + '</b> approved photos', cls: 'ticker__up' },
-      { icon: 'payments', html: '<b>' + esc(inr(s.credited)) + '</b> credited to UPI' },
-      { icon: 'clock', html: '<b>' + s.pending + '</b> in review' },
-      { icon: 'cloud', html: '<b>' + s.waiting + '</b> waiting to send', cls: s.waiting ? 'ticker__warn' : '' },
-      { icon: 'flag', html: '<b>' + goalApprovedCount() + '/' + DB.target + '</b> village goal' }
-    ];
-    const html = items.map(i =>
-      '<span class="ticker__item ' + (i.cls || '') + '">' + svgIcon(i.icon) + '<span>' + i.html + '</span></span>').join('');
-    track.innerHTML = html + html;
+    const wrap = $('#homeStatusBanner');
+    if (!wrap) return;
+    const waiting = s.waiting;
+    if (!isOnline() && waiting > 0) {
+      wrap.innerHTML = '<div class="notice notice--warn">' + svgIcon('wifi-off') +
+        '<span><span class="notice__title">Offline — ' + waiting + ' photo' + (waiting > 1 ? 's' : '') + ' waiting to send</span>' +
+        'They are saved on this phone and will go out automatically when the signal returns.</span></div>';
+    } else if (!isOnline()) {
+      wrap.innerHTML = '<div class="notice notice--warn">' + svgIcon('wifi-off') +
+        '<span><span class="notice__title">You are offline</span>Photos you take now are saved on this phone and sent later.</span></div>';
+    } else if (waiting > 0) {
+      wrap.innerHTML = '<div class="notice notice--info">' + svgIcon('cloud') +
+        '<span><span class="notice__title">' + waiting + ' photo' + (waiting > 1 ? 's' : '') + ' waiting to send</span>' +
+        'Tap the sync chip at the top to send them now.</span></div>';
+    } else {
+      wrap.innerHTML = '';
+    }
   }
 
   function statTile(label, value, note, tone) {
@@ -881,11 +904,27 @@
     $$('input[name=lang]', wrap).forEach(r => r.addEventListener('change', () => {
       DB.user.lang = r.value;
       const l = langByCode(r.value);
-      $('#langNextLabel').textContent = l.name;
+      const label = $('#langNextLabel');
+      if (label) label.textContent = l.name;
+      $('#langPillText').textContent = l.code.slice(0, 2).toUpperCase();
       save();
     }));
-    $('#langNextLabel').textContent = langByCode(DB.user.lang).name;
+    const labelNow = $('#langNextLabel');
+    if (labelNow) labelNow.textContent = langByCode(DB.user.lang).name;
+
+    /* two modes: first-run onboarding, or editing from Settings */
+    const editing = langMode === 'edit';
+    $('#langCancel').hidden = !editing;
+    $('#langNext').innerHTML = editing
+      ? 'Save and go to Home <span data-icon="check"></span>'
+      : 'Continue with <span id="langNextLabel">' + esc(langByCode(DB.user.lang).name) + '</span> <span data-icon="arrow-right"></span>';
+    const label = $('#langNextLabel');
+    if (label) label.textContent = langByCode(DB.user.lang).name;
+    hydrateIcons($('#langNext'));
+    const eyebrow = $('#scr-onboard-language .eyebrow');
+    if (eyebrow) eyebrow.textContent = editing ? 'Change language' : 'Step 1 of 4 · Setup';
   }
+  let langMode = 'onboarding';
 
   function speak(text, langCode) {
     if (!('speechSynthesis' in window)) { toast('This device cannot read text aloud.', 'warn'); return; }
@@ -1815,7 +1854,22 @@
      ================================================================== */
   function bind() {
     /* language */
-    $('#langNext').addEventListener('click', () => { save(); go('scr-onboard-verify'); });
+    $('#langNext').addEventListener('click', () => {
+      save();
+      if (langMode === 'edit') {
+        langMode = 'onboarding';
+        renderLanguages();
+        go('scr-home');
+        toast('Language changed to ' + langByCode(DB.user.lang).name + '.');
+      } else {
+        go('scr-onboard-verify');
+      }
+    });
+    $('#langCancel').addEventListener('click', () => {
+      langMode = 'onboarding';
+      renderLanguages();
+      go('scr-settings');
+    });
     $('#speakBtn').addEventListener('click', () => {
       const l = langByCode(DB.user.lang);
       const text = l.code === 'en-IN'
@@ -1910,10 +1964,16 @@
     $$('[data-goto]').forEach(b => b.addEventListener('click', () => go(b.dataset.goto)));
     $('#brandHome').addEventListener('click', () => go(DB.user.onboarded ? 'scr-home' : 'scr-onboard-language'));
     $('#avatarBtn').addEventListener('click', () => go('scr-settings'));
-    $('#fabBtn').addEventListener('click', () => startSubmission(null));
+    $('#navCapture').addEventListener('click', () => startSubmission(null));
     $('#doneAgainBtn').addEventListener('click', () => startSubmission(null));
     $('#netChip').addEventListener('click', () => syncNow());
-    $('#langPill').addEventListener('click', () => go('scr-onboard-language'));
+    $('#langPill').addEventListener('click', () => { langMode = 'edit'; renderLanguages(); go('scr-onboard-language'); });
+    $('#changeLangBtn').addEventListener('click', () => { langMode = 'edit'; renderLanguages(); go('scr-onboard-language'); });
+    $('#bellBtn').addEventListener('click', () => { go('scr-home'); tourStart(0); });
+    $('#tourBtn').addEventListener('click', () => { go('scr-home'); tourStart(0); });
+    $('#tourNext').addEventListener('click', tourNext);
+    $('#tourSkip').addEventListener('click', () => tourEnd(false));
+    $('#tourClose').addEventListener('click', () => tourEnd(false));
 
     /* capture */
     $('#takePhotoBtn').addEventListener('click', () => $('#cameraInput').click());
@@ -2079,7 +2139,107 @@
   }
 
   /* ==================================================================
-     21. BOOT
+     21. GUIDED TOUR — demo of the features that matter
+     ================================================================== */
+  const TOUR_STEPS = [
+    {
+      target: '#navCapture',
+      title: 'Photograph an asset, earn ₹10',
+      text: 'Tap the camera to take one clear photo of a village asset. GPS is stamped automatically and the photo is compressed on your phone before it is sent.'
+    },
+    {
+      target: '.card--hero',
+      title: 'Your money, always visible',
+      text: 'Total earned sits at the top because that is what you are working for. Money that is still with a reviewer is shown separately so nothing is hidden.'
+    },
+    {
+      target: '#gaugeMetrics',
+      title: 'Mapping health score',
+      text: 'One score from four real measures — approval rate, village coverage, photos with GPS and review backlog. Tap View all submissions to work on the weakest one.'
+    },
+    {
+      target: '#homeAlert',
+      title: 'Fix what gets rejected',
+      text: 'Rejected photos come back with the exact reason and can be resubmitted. Fix the reason, resend, and the ₹10 is still yours.'
+    },
+    {
+      target: '#netChip',
+      title: 'Works without a signal',
+      text: 'Photos taken offline are queued on your phone and sent automatically later. Nothing is lost when the network drops mid-village.'
+    }
+  ];
+
+  let tourIndex = 0;
+  let tourActive = false;
+
+  function tourStart(fromStep) {
+    tourIndex = fromStep || 0;
+    tourActive = true;
+    if (current !== 'scr-home') go('scr-home');
+    const t = $('#tour');
+    t.hidden = false;
+    /* restart the entrance animation (it cannot run while hidden) */
+    const card = $('.tour__card');
+    if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
+    $('#tourDots').innerHTML = TOUR_STEPS.map((_, i) =>
+      '<span class="tour__dot' + (i === tourIndex ? ' is-on' : '') + '"></span>').join('');
+    tourRender();
+  }
+
+  function tourRender() {
+    /* skip a step whose target is not on this screen */
+    let guard = 0;
+    while (guard++ < TOUR_STEPS.length) {
+      const step = TOUR_STEPS[tourIndex];
+      if (!step) { tourEnd(); return; }
+      const el = $(step.target);
+      if (el) { tourPaint(step, el); return; }
+      if (tourIndex >= TOUR_STEPS.length - 1) { tourEnd(); return; }
+      tourIndex++;
+    }
+    tourEnd();
+  }
+
+  function tourPaint(step, el) {
+    $('#tourStep').textContent = 'Step ' + (tourIndex + 1) + ' of ' + TOUR_STEPS.length;
+    $('#tourTitle').textContent = step.title;
+    $('#tourText').textContent = step.text;
+    $('#tourNext').textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Start mapping' : 'Next';
+    $$('#tourDots .tour__dot').forEach((d, i) => d.classList.toggle('is-on', i === tourIndex));
+
+    /* jump (no smooth) so the spotlight can be measured immediately */
+    el.scrollIntoView({ block: 'center', behavior: 'auto' });
+    const place = () => {
+      const r = el.getBoundingClientRect();
+      const appRect = $('.app').getBoundingClientRect();
+      const spot = $('#tourSpot');
+      spot.style.left = (r.left - appRect.left - 6) + 'px';
+      spot.style.top = (r.top - appRect.top - 6) + 'px';
+      spot.style.width = (r.width + 12) + 'px';
+      spot.style.height = (r.height + 12) + 'px';
+      spot.style.opacity = '1';
+    };
+    place();
+    setTimeout(place, 60);
+    setTimeout(place, 340);
+  }
+
+  function tourNext() {
+    if (tourIndex >= TOUR_STEPS.length - 1) { tourEnd(true); return; }
+    tourIndex++;
+    tourRender();
+  }
+
+  function tourEnd(finished) {
+    tourActive = false;
+    $('#tour').hidden = true;
+    DB.settings.tourSeen = true;
+    save();
+    if (finished) toast('That is the whole flow. Happy mapping!');
+  }
+
+  /* ==================================================================
+     22. BOOT
      ================================================================== */
   function boot() {
     initStore();
@@ -2118,6 +2278,11 @@
     if (DB.user.onboarded) { go('scr-home'); }
     else { go('scr-onboard-language'); }
     if (hash && hash !== 'scr-reviewer' && document.getElementById(hash)) go(hash);
+
+    /* first run: show the feature tour once, on the home screen */
+    if (DB.user.onboarded && !DB.settings.tourSeen && current === 'scr-home') {
+      setTimeout(() => tourStart(0), 700);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
